@@ -1,0 +1,74 @@
+{
+	"name": "chat_for_customer_ie",
+	"version": "1.0.0",
+	"description": "基于 grunt 的自动化构建工具",
+	"path": {
+		"node_modules": "./node_modules/",
+		"assets": "./dist/assets/",
+		"image": "./images/",
+		"src": {
+			"path": "./src/",
+			"scripts": "./src/scripts/",
+			"styles": "./src/styles/",
+			"templates": "./src/templates/",
+			"images": "./src/images/",
+			"fonts": "./src/fonts/"
+		},
+		"dist": {
+			"path": "./dist/",
+			"js": "./dist/js/",
+			"tempJs": "./dist/tempJs/",
+			"css": "./dist/css/",
+			"tempCss": "./dist/tempCss/",
+			"templates": "./dist/templates/",
+			"images": "./dist/images/",
+			"fonts": "./dist/fonts/"
+		}
+	},
+	"bower": {
+		"copyfiles": {
+			"jquery.min.js": "jquery/dist/jquery.min.js",
+			"base64.min.js": "js-base64/base64.min.js",
+			"md5.min.js": "js-md5/js/md5.min.js",
+			"require.js": "requirejs/require.js",
+			"text.js": "text/text.js",
+			"underscore.min.js": "underscore/underscore-min.js",
+			"doT.min.js": "doT/doT.min.js"
+		},
+		"uglifyfiles": {
+			"dist/assets/require.min.js": "dist/assets/require.js",
+			"dist/assets/text.min.js": "dist/assets/text.js"
+		},
+		"cssminfiles": {},
+		"removefiles": [
+			"dist/assets/require.js",
+			"dist/assets/text.js"
+		]
+	},
+	"dependencies": {
+		"sockjs-client": "^1.3.0",
+		"stompjs": "^2.3.3"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.2.2",
+		"@babel/preset-env": "^7.3.1",
+		"browser-sync": "^2.12.10",
+		"grunt": "^0.4.5",
+		"grunt-autoprefixer": "^3.0.3",
+		"grunt-babel": "^8.0.0",
+		"grunt-bowercopy": "^1.2.3",
+		"grunt-contrib-clean": "^0.6.0",
+		"grunt-contrib-coffee": "^2.0.0",
+		"grunt-contrib-concat": "^0.5.1",
+		"grunt-contrib-copy": "^0.8.0",
+		"grunt-contrib-cssmin": "^0.13.0",
+		"grunt-contrib-pug": "^2.0.0",
+		"grunt-contrib-requirejs": "^0.4.4",
+		"grunt-contrib-sass": "^1.0.0",
+		"grunt-contrib-uglify": "^4.0.0",
+		"grunt-contrib-watch": "^1.1.0",
+		"grunt-newer": "^1.1.1",
+		"grunt-string-replace": "^1.3.1",
+		"load-grunt-tasks": "^3.3.0"
+	}
+}
