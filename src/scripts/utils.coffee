@@ -57,18 +57,15 @@ define [
 			data.contentType = 'application/json;charset=UTF-8'
 			data.dataType = 'json'
 			data.processData = false
-			data.data = JSON.stringify data.data
+			data.data = JSON.stringify data.data if data.data
 
-			# 签名（非 /common 或 /user 开头的接口
-			unless /^(\/api)?\/(common|user)/.test api
-				key = 'data'
-				key = 'params' if not data.type or new RegExp(/GET|DELETE/, 'i').test data.type
+			if data.params
+				params = ''
+				params += "&#{ k }=#{ v or '' }" for own k, v of data.params
+				params = '?' + params.slice 1
+				data.url += params
+				delete data.params
 
-				timestamp = +ALPHA.serverTime()
-				data.headers =
-					timestamp: timestamp
-
-			console.log data
 			# 发起请求
 			$.ajax data
 

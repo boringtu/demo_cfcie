@@ -15,7 +15,25 @@ html(lang="zh")
 		<![endif]-->
 
 		#app
+			.tab-box
+			.content-box
+				.chat-box
+					.queue-msg.
+						您好，当前您排在第 #[span.queueNum 0] 位，请耐心等待
+					.chat-history
 
+					.chat-toolbar
+
+					.chat-sendbox
+						textarea(
+							placeholder="请输入消息..."
+							spellcheck="false"
+							maxlength="1000"
+						)
+						button.send(disabled) 发送
+				.advertising-box
+
+		script(src="assets/polyfill.min.js")
 		script(src="assets/jquery.min.js")
 		script(src="assets/sockjs.min.js")
 		script(src="assets/stomp.min.js")
