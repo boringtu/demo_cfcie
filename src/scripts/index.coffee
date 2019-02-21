@@ -431,6 +431,8 @@ define [
 			# total height
 			tH = @els.chatWrapper[0].offsetHeight
 
+			console.log sT, winH, tH
+			console.log sT + winH > tH - 9 - 34 / 2
 			return sT + winH > tH - 9 - 34 / 2
 		
 		# 服务器推送来的消息（包括己方发送的消息）
@@ -438,14 +440,14 @@ define [
 			list = @data.chatHistoryList
 			# 刷新 timeline 的数据
 			@refreshTimeline [msg], 1
-			@els.chatWrapper.append @tpls.historyItems [msg]
+			setTimeout (=> @els.chatWrapper.append @tpls.historyItems [msg]), 0
 			@data.chatHistoryList = [...list, msg]
 			if msg.sendType is 2
 				# 己方消息，滚动到底部
-				@scrollToBottom 80
+				setTimeout ( => @scrollToBottom 80), 0
 			else
 				if @isLocateBottom()
-					@scrollToBottom()
+					setTimeout ( => @scrollToBottom()), 0
 				else
 					# 对方消息，追加到 newUnreadElList
 					@data.newUnreadElList.push msg
