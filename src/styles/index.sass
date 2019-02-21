@@ -30,6 +30,19 @@ abbr[title]
 	cursor: help
 button
 	cursor: pointer
+	background-color: #0083ff
+	border: 1px solid #0083ff
+	border-radius: 5px
+	color: #fff
+	&:hover
+		background-color: #66b1ff
+		border-color: #66b1ff
+	&:active
+		background-color: #3a8ee6
+		border-color: #3a8ee6
+	&[disabled]
+		background-color: #a0cfff
+		border-color: #a0cfff
 .clear
 	zoom: 1
 	&:after
@@ -56,10 +69,6 @@ button
 
 img[src=""]
 	display: none
-
-.el-button--primary
-	background-color: #0083ff
-	border-color: #0083ff
 
 body
 	position: absolute
@@ -152,18 +161,6 @@ body
 			line-height: 36px
 			padding: 0
 			margin-top: 30px
-			background-color: #0083ff
-			border: 1px solid #0083ff
-			border-radius: 5px
-			color: #fff
-			&:hover
-				background-color: #66b1ff
-				border-color: #66b1ff
-				color: #fff
-			&:active
-				background-color: #3a8ee6
-				border-color: #3a8ee6
-				color: #fff
 
 .tab-box
 	height: 60px
@@ -206,13 +203,26 @@ body
 			color: #333
 		> div
 			padding: 0 12px 20px
-		.el-button
+		button
+			width: 98px
+			height: 36px
 			border-radius: 5px
 			line-height: 34px
 			padding: 0 32px
 			font-size: 16px
-			~ button
-				margin-left: 0px
+			margin-left: 18px
+			&:first-child
+				margin-left: 0
+				background-color: #fff
+				border-color: #dcdfe6
+				color: #606266
+				&:hover
+					background-color: #ecf5ff
+					border-color: #c6e2ff
+					color: #409eff
+				&:active
+					border-color: #3a8ee6
+					color: #3a8ee6
 		.box-arrow
 			position: absolute
 			z-index: 2
@@ -259,6 +269,7 @@ body
 					font-size: 16px
 					line-height: 16px
 			.unreadCount
+				display: none
 				position: absolute
 				z-index: 10
 				right: 12px
@@ -433,8 +444,9 @@ body
 							background-color: #ccc
 			form
 				position: relative
+				top: 8px
 				margin-left: 20px
-				width: 20px
+				width: 22px
 				height: 20px
 				overflow: hidden
 				input
@@ -479,19 +491,6 @@ body
 				line-height: 34px
 				padding: 0 34px
 				font-size: 16px
-				background-color: #0083ff
-				border: 1px solid #0083ff
-				border-radius: 5px
-				color: #fff
-				&:hover
-					background-color: #66b1ff
-					border-color: #66b1ff
-				&:active
-					background-color: #3a8ee6
-					border-color: #3a8ee6
-				&[disabled]
-					background-color: #a0cfff
-					border-color: #a0cfff
 		&.waitting
 			.queue-msg
 				display: block

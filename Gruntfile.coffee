@@ -118,6 +118,7 @@ module.exports = (grunt) ->
 					'<%= pkg.path.assets %>sockjs.min.js': '<%= pkg.path.node_modules %>sockjs-client/dist/sockjs.min.js'
 					'<%= pkg.path.assets %>stomp.min.js': '<%= pkg.path.node_modules %>stompjs/lib/stomp.min.js'
 					'<%= pkg.path.assets %>polyfill.min.js': '<%= pkg.path.node_modules %>@babel/polyfill/dist/polyfill.min.js'
+					'<%= pkg.path.assets %>velocity.min.js': '<%= pkg.path.node_modules %>velocity-animate/velocity.min.js'
 			forIE8L:
 				files:
 					'<%= pkg.path.dist.css %>ie-blocker.css': '<%= pkg.path.dist.tempCss %>ie-blocker.css'

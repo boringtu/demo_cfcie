@@ -16,13 +16,33 @@ html(lang="zh")
 
 		#app
 			.tab-box
+				button.close
+					i.icon.icon-close
+				.closing-confirm-box
+					span.box-arrow
+						i
+					p 确定要结束对话吗？
+					div
+						button(data-type="cancel") 取消
+						button(data-type="okey") 确定
 			.content-box
 				.chat-box
 					.queue-msg.
 						您好，当前您排在第 #[span.queueNum 0] 位，请耐心等待
 					.chat-history
+						.unreadCount(data-type="down")
+							a(href="javascript:;")
+								strong #[span 0] 条新消息
+							button.icon.icon-close
+						.chat-window
+							.loading-history
+								i.icon.icon-loading.icon-spin.icon-fast
+							.chatWrapper
 
 					.chat-toolbar
+						form(enctype="multipart/form-data")
+							input(type="file" accept="image/gif, image/jpeg, image/png")
+							i.icon.icon-picture
 
 					.chat-sendbox
 						textarea(
@@ -34,6 +54,7 @@ html(lang="zh")
 				.advertising-box
 
 		script(src="assets/polyfill.min.js")
+		script(src="assets/velocity.min.js")
 		script(src="assets/jquery.min.js")
 		script(src="assets/sockjs.min.js")
 		script(src="assets/stomp.min.js")
