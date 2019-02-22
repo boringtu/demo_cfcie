@@ -43,6 +43,11 @@ define [
 		else
 			"#{ M }-#{ d } #{ H }:#{ m }:#{ s }"
 
+	# 计算未读消息个数（超过99，则显示99+）
+	calcUnReadCount = (n) ->
+		return "#{ n }" if n < 99
+		'99+'
+
 	# 渲染消息
 	getInnerHTML = (msg) ->
 		return '' unless msg and msg.message
@@ -190,12 +195,15 @@ define [
 			@els.body.on 'keyup', '.init-box input[name="phone"]', @eventKeyupPhone
 			@els.body.on 'keydown', '.init-box input[name="phone"]', @eventKeydownPhoneNum
 			@els.body.on 'click', '.init-box button', @eventStartChatting
+			@els.body.on 'click', '.chat-history .unreadCount a', @eventShowLowerUnread
 			@els.body.on 'change', '.chat-toolbar input[type="file"]', @eventSendPic
+			@els.body.on 'submit', '.chat-toolbar form', @eventPicSubmit
 			@els.body.on 'focus', '.chat-sendbox textarea', => @els.contentBox.addClass 'active'
 			@els.body.on 'blur', '.chat-sendbox textarea', => @els.contentBox.removeClass 'active'
 			@els.body.on 'keydown', '.chat-sendbox textarea', @eventTextareaKeydown
 			@els.body.on 'keyup', '.chat-sendbox textarea', @eventTextareaKeyup
 			@els.body.on 'click', '.chat-sendbox button.send', @eventSend
+			@els.chatWindow.on 'scroll', @eventScrollHistory
 
 		showInitBox: ->
 			@els.initBox = content = $ @tpls.initBox()
@@ -227,25 +235,13 @@ define [
 			@data.inputText = val = event.currentTarget.value
 			@els.chatSendBtn.prop disabled: !val.trim()
 
-		eventSend: =>
-			return unless @data.inputText.trim()
-			# 转义（防xss）
-			text = @data.inputText.encodeHTML()
-			# 发送消息体（messageType 1: 文字 2: 图片）
-			sendBody = messageType: 1, message: text
-			# 发送消息
-			@wsSend ALPHA.API_PATH.WS.SEND_CODE.MESSAGE, JSON.stringify sendBody
-			# 清空消息框
-			@data.inputText = ''
-			@els.chatTextarea.val ''
-			@els.chatSendBtn.prop disabled: true
-
 		# 建立 WebSocket 连接
 		connectWSLink: ->
 			@socket?.close()
 			@ws?.disconnect()
 			@socket = socket = new SockJS ALPHA.API_PATH.WS.url
 			@ws = ws = Stomp.over socket
+			setInterval (=> @wsSend 'h'), 3000
 			# 断线重连机制
 			socket.addEventListener 'close', => @connectWSLink() unless @closingActively
 			ws.connect {}, (frame) =>
@@ -432,9 +428,68 @@ define [
 			# total height
 			tH = @els.chatWrapper[0].offsetHeight
 
-			console.log sT, winH, tH
-			console.log sT + winH > tH - 9 - 34 / 2
+			#console.log sT, winH, tH
+			#console.log sT + winH > tH - 9 - 34 / 2
 			return sT + winH > tH - 9 - 34 / 2
+
+		eventSend: =>
+			return unless @data.inputText.trim()
+			# 转义（防xss）
+			text = @data.inputText.encodeHTML()
+			# 发送消息体（messageType 1: 文字 2: 图片）
+			sendBody = messageType: 1, message: text
+			# 发送消息
+			@wsSend ALPHA.API_PATH.WS.SEND_CODE.MESSAGE, JSON.stringify sendBody
+			# 清空消息框
+			@data.inputText = ''
+			@els.chatTextarea.val ''
+			@els.chatSendBtn.prop disabled: true
+
+		# Event: 历史消息列表滚动事件
+		eventScrollHistory: =>
+			return if @data.noMoreHistory
+
+			# 频率控制器
+			return if @data.winScrollState
+			@data.winScrollState = 1
+			setTimeout (=> @data.winScrollState = 0), 20
+
+			# window element
+			win = @els.chatWindow[0]
+			# 备注：
+			# 12:	.chat-content padding-top
+			# 14:	.time-line height
+			# 9:	.msg-self/.msg-opposite padding-top
+			# 34/2	.msg-bubble half height
+			# 消息顶部距离文字中间的高度（不包含timeline）
+			cH = 12 + 9 + 34 / 2
+			# .time-line height
+			tT = 14
+			# window scrollTop
+			sT = win.scrollTop
+
+			## 处理 newUnreadElList
+			@clearNewUnread() if @isLocateBottom()
+
+			## 获取更多历史消息数据
+			@fetchHistory() if sT < cH + tT
+
+		# Event: 显示下面的未读消息点击事件
+		eventShowLowerUnread: ->
+			# 清空 新推送的未读消息
+			@clearNewUnread()
+			# 滚动到底部
+			@scrollToBottom()
+
+		# 清空 新推送的未读消息
+		clearNewUnread: ->
+			# 清空 新推送的未读消息 element 引用列表
+			@data.newUnreadElList = []
+			@els.unreadCount.text(0).hide()
+
+		setNewUnread: ->
+			size = @data.newUnreadElList.length
+			@els.unreadCount.text(calcUnReadCount size).show()
 		
 		# 服务器推送来的消息（包括己方发送的消息）
 		addMessage: (msg) ->
@@ -452,59 +507,66 @@ define [
 				else
 					# 对方消息，追加到 newUnreadElList
 					@data.newUnreadElList.push msg
+					@setNewUnread()
+
+		eventPicSubmit: (event) =>
+			el = $ event.currentTarget
+			event.preventDefault()
+			target = @els.chatSendImg[0]
+			if target
+				file = target.files[0]
+				if file and file.size / 1024 / 1024 > 10
+					# 清空 value，否则重复上传同一个文件不会触发 change 事件
+					target.value = ''
+					# 弹出提示
+					alert '图片大小不可超过10Mb'
+					#vm.$notify
+					#	type: 'warning'
+					#	title: '图片发送失败'
+					#	message: "图片大小不可超过10Mb"
+					return
+
+			#data = multipartFile: el.serialize()
+			#console.log el.serialize()
+
+			#$.ajax
+			#	type: 'POST'
+			#	url: ALPHA.API_PATH.common.upload
+			#	data: JSON.stringify data
+			#	dataType: 'json'
+			#	processData: false
+			#.then (res) =>
+			#	console.log res.data
+			#return
+
+			el.attr action: ALPHA.API_PATH.common.upload
+			el.ajaxSubmit
+				method: 'POST'
+				dataFilter: (data) ->
+					console.log 'dataFilter'
+					console.log data
+					data.toJSON()
+				success: (res) =>
+					console.log 'success'
+					console.log res
+					if res.msg is 'success'
+						fileUrl = res.data.fileUrl
+
+						# 发送消息体（messageType 1: 文字 2: 图片）
+						sendBody = messageType: 2, message: fileUrl
+						# 发送消息
+						@wsSend ALPHA.API_PATH.WS.SEND_CODE.MESSAGE, JSON.stringify sendBody
+						console.log @els.chatSendImg[0]
+						target.value = ''
+				error: =>
+					# 弹出提示
+					alert '图片大小不可超过10Mb'
+					target?.value = ''
 
 		# Event: 发送图片
 		eventSendPic: (event) =>
-			target = event.target
-			file = target.files[0]
-
-			# 限制图片大小 小于 10Mb
-			if file.size / 1024 / 1024 > 10
-				# 清空 value，否则重复上传同一个文件不会触发 change 事件
-				target.value = ''
-				# 弹出提示
-				alert '图片大小不可超过10Mb'
-				#vm.$notify
-				#	type: 'warning'
-				#	title: '图片发送失败'
-				#	message: "图片大小不可超过10Mb"
-				return
-
-			###
-			# 此段注释代码是不依赖网络，将图片直接显示在历史消息里，并方便加上 loading 状态的功能
-			reader = new FileReader()
-			reader.addEventListener 'load', (event) ->
-				data = target.result
-				image = new Image()
-				# 加载图片获取图片的宽高
-				image.addEventListener 'load', (event) ->
-					w = image.width
-					h = image.height
-				image.src = data
-			reader.readAsDataURL file
-			###
-
-			formData = new FormData()
-			formData.append 'multipartFile', file
-			# 发起请求
-			$.ajax
-				type: 'POST'
-				url: ALPHA.API_PATH.common.upload
-				data: formData
-				contentType: false
-				dataType: 'json'
-				processData: false
-			.then (res) =>
-				console.log res.data
-				if res.msg is 'success'
-					fileUrl = res.data.fileUrl
-
-					# 发送消息体（messageType 1: 文字 2: 图片）
-					sendBody = messageType: 2, message: fileUrl
-					# 发送消息
-					@wsSend ALPHA.API_PATH.WS.SEND_CODE.MESSAGE, JSON.stringify sendBody
-			# 清空 value，否则重复上传同一个文件不会触发 change 事件
-			target.value = ''
+			console.log 'file value changed'
+			$(event.currentTarget).closest('form').submit()
 
 		# Event: 立即咨询点击事件
 		eventStartChatting: =>

@@ -1,6 +1,7 @@
 doctype html
 html(lang="zh")
 	head
+		meta(http-equiv="Content-Type" content="text/html; charset=utf-8")
 		meta(charset="utf-8")
 		meta(http-equiv="X-UA-Compatible", content="IE=edge")
 		meta(name="viewport", content="width=device-width,initial-scale=1.0")
@@ -41,7 +42,7 @@ html(lang="zh")
 
 					.chat-toolbar
 						form(enctype="multipart/form-data")
-							input(type="file" accept="image/gif, image/jpeg, image/png")
+							input(type="file" accept="image/gif, image/jpeg, image/png" name="multipartFile")
 							i.icon.icon-picture
 
 					.chat-sendbox
@@ -56,6 +57,7 @@ html(lang="zh")
 		script(src="assets/polyfill.min.js")
 		script(src="assets/velocity.min.js")
 		script(src="assets/jquery.min.js")
+		script(src="assets/jquery.form.min.js")
 		script(src="assets/sockjs.min.js")
 		script(src="assets/stomp.min.js")
 		script(src="assets/require.min.js")

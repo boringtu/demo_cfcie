@@ -47,6 +47,7 @@
 	},
 	"dependencies": {
 		"@babel/polyfill": "^7.2.5",
+		"jquery-form": "^4.2.2",
 		"sockjs-client": "^1.3.0",
 		"stompjs": "^2.3.3",
 		"velocity-animate": "^1.5.2"
