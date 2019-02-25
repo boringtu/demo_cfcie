@@ -157,7 +157,7 @@ define [
 			Utils.ajax ALPHA.API_PATH.user.init,
 				method: 'POST'
 				data:
-					channel: 0
+					channel: 1
 					origin: origin
 			.then (res) =>
 				data = res.data
@@ -229,7 +229,10 @@ define [
 		eventTextareaKeydown: (event) =>
 			if event.keyCode is 13 and not event.shiftKey
 				event.preventDefault()
-				@eventSend()
+				return @eventSend()
+			el = $ event.currentTarget
+			maxL = +el.attr 'maxlength'
+			event.preventDefault() unless el.val().length < maxL
 
 		eventTextareaKeyup: (event) =>
 			@data.inputText = val = event.currentTarget.value
@@ -241,7 +244,6 @@ define [
 			@ws?.disconnect()
 			@socket = socket = new SockJS ALPHA.API_PATH.WS.url
 			@ws = ws = Stomp.over socket
-			setInterval (=> @wsSend 'h'), 3000
 			# 断线重连机制
 			socket.addEventListener 'close', => @connectWSLink() unless @closingActively
 			ws.connect {}, (frame) =>
@@ -294,6 +296,7 @@ define [
 		chattingClosed: ->
 			@els.chatTextarea.prop readonly: yes
 			@els.chatSendImg.prop disabled: yes
+			@els.chatWrapper.append TplClosedNotice
 
 		# 获取历史消息数据
 		fetchHistory: (isReset) ->
@@ -513,7 +516,7 @@ define [
 			el = $ event.currentTarget
 			event.preventDefault()
 			target = @els.chatSendImg[0]
-			if target
+			if target and target.files
 				file = target.files[0]
 				if file and file.size / 1024 / 1024 > 10
 					# 清空 value，否则重复上传同一个文件不会触发 change 事件
@@ -545,6 +548,9 @@ define [
 				dataFilter: (data) ->
 					console.log 'dataFilter'
 					console.log data
+					# IE9 中特么会在前后诡异的加上<pre>
+					data = data.replace /\s*\<[\/]?pre\>\s*/ig, ''
+					console.log data
 					data.toJSON()
 				success: (res) =>
 					console.log 'success'
@@ -559,6 +565,7 @@ define [
 						console.log @els.chatSendImg[0]
 						target.value = ''
 				error: =>
+					console.warn 'error'
 					# 弹出提示
 					alert '图片大小不可超过10Mb'
 					target?.value = ''
