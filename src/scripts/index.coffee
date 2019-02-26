@@ -87,6 +87,7 @@ define [
 
 	class View
 		data:
+			reconnectCount: -1
 			isLoadingHistory: 0
 			noMoreHistory: 0
 			msgInitCount: 20
@@ -245,7 +246,13 @@ define [
 			@socket = socket = new SockJS ALPHA.API_PATH.WS.url
 			@ws = ws = Stomp.over socket
 			# 断线重连机制
-			socket.addEventListener 'close', => @connectWSLink() unless @closingActively
+			socket.addEventListener 'close', =>
+				if ++@data.reconnectCount > 10
+					alert '网络连接失败，请刷新重试'
+				else
+					setTimeout =>
+						@connectWSLink() unless @closingActively
+					, 1000
 			ws.connect {}, (frame) =>
 				# 添加监听
 				ws.subscribe ALPHA.API_PATH.WS.p2p(), @monitorP2P
