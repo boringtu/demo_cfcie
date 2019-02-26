@@ -516,6 +516,7 @@ define [
 			el = $ event.currentTarget
 			event.preventDefault()
 			target = @els.chatSendImg[0]
+			return unless target.value
 			if target and target.files
 				file = target.files[0]
 				if file and file.size / 1024 / 1024 > 10
@@ -547,14 +548,12 @@ define [
 				method: 'POST'
 				dataFilter: (data) ->
 					console.log 'dataFilter'
-					console.log data
 					# IE9 中特么会在前后诡异的加上<pre>
 					data = data.replace /\s*\<[\/]?pre\>\s*/ig, ''
 					console.log data
 					data.toJSON()
 				success: (res) =>
 					console.log 'success'
-					console.log res
 					if res.msg is 'success'
 						fileUrl = res.data.fileUrl
 
@@ -562,7 +561,6 @@ define [
 						sendBody = messageType: 2, message: fileUrl
 						# 发送消息
 						@wsSend ALPHA.API_PATH.WS.SEND_CODE.MESSAGE, JSON.stringify sendBody
-						console.log @els.chatSendImg[0]
 						target.value = ''
 				error: =>
 					console.warn 'error'
