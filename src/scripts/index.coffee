@@ -498,7 +498,7 @@ define [
 
 
 					return
-
+					# 注释会报错。。以下代码先留着，确定没用再删
 					formEl = $ """
 						<form action="#{ ALPHA.API_PATH.common.upload }" style="display: none;">
 							<input type="file" name="multipartFile" />
