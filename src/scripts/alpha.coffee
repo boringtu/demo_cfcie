@@ -14,7 +14,7 @@ define [], ->
 			WS:
 				# 用于建立 WebSocket 连接
 				url: '/api/chat'
-				# 枚举：发送 ws 数据的类型
+#				# 枚举：发送 ws 数据的类型
 				SEND_CODE:
 					# 发送消息
 					MESSAGE: 1

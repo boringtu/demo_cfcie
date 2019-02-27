@@ -203,6 +203,7 @@ define [
 			@els.body.on 'blur', '.chat-sendbox textarea', => @els.contentBox.removeClass 'active'
 			@els.body.on 'keydown', '.chat-sendbox textarea', @eventTextareaKeydown
 			@els.body.on 'keyup', '.chat-sendbox textarea', @eventTextareaKeyup
+			@els.body.on 'paste', '.chat-sendbox textarea', @eventOnPaste
 			@els.body.on 'click', '.chat-sendbox button.send', @eventSend
 			@els.chatWindow.on 'scroll', @eventScrollHistory
 
@@ -454,6 +455,44 @@ define [
 			@data.inputText = ''
 			@els.chatTextarea.val ''
 			@els.chatSendBtn.prop disabled: true
+
+
+		# Event: 向输入框内黏贴
+		eventOnPaste:(event) =>
+			console.log(event);
+			clipboardData = event.clipboardData or event.originalEvent.clipboardData
+			if clipboardData.getData
+				console.log(clipboardData.items);
+				for i in [0..clipboardData.items.length]
+					item = clipboardData.items[i]
+					console.log(item);
+					if item && item.kind == "file"
+						file = item.getAsFile()
+						if file and file.size / 1024 / 1024 > 10
+							alert '图片大小不可超过10Mb'
+							return
+						el = $ event.currentTarget
+						el.attr action: ALPHA.API_PATH.common.upload
+						el.ajaxSubmit
+							method: 'POST'
+							dataFilter: (data) ->
+								console.log 'dataFilter'
+								# IE9 中特么会在前后诡异的加上<pre>
+								data = data.replace /\s*\<[\/]?pre\>\s*/ig, ''
+								console.log data
+								data.toJSON()
+							success: (res) =>
+								console.log 'success'
+								if res.msg is 'success'
+									fileUrl = res.data.fileUrl
+									# 发送消息体（messageType 1: 文字 2: 图片）
+									sendBody = messageType: 2, message: fileUrl
+									# 发送消息
+									@wsSend ALPHA.API_PATH.WS.SEND_CODE.MESSAGE, JSON.stringify sendBody
+							error: =>
+								console.warn 'error'
+								# 弹出提示
+								alert '图片大小不可超过10Mb'
 
 		# Event: 历史消息列表滚动事件
 		eventScrollHistory: =>
