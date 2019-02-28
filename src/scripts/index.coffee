@@ -65,6 +65,7 @@ define [
 							char
 				text.encodeHTML()
 			when 2
+				toBottom = msg.sendType is 1 or view.isLocateBottom()
 				# 图片
 				"""
 					<a href="/#{ msg.message.encodeHTML() }" target="_blank">
@@ -189,6 +190,9 @@ define [
 				@socket?.close()
 				@ws?.disconnect()
 
+			# window._imgLoaded = @eventImgLoaded
+
+			# @els.body.on 'load', 'img', @eventImgLoaded
 			@els.body.on 'click', '.tab-box .close', @eventCloseTheChat
 			@els.body.on 'click', '.tab-box .closing-confirm-box button[data-type="cancel"]', => @els.closingConfirmBox.hide()
 			@els.body.on 'click', '.tab-box .closing-confirm-box button[data-type="okey"]', => @els.closingConfirmBox.hide(); window.close()
@@ -586,13 +590,14 @@ define [
 			# 刷新 timeline 的数据
 			@refreshTimeline [msg], 1
 			setTimeout (=> @els.chatWrapper.append @tpls.historyItems [msg]), 0
+			console.log @tpls.historyItems [msg]
 			@data.chatHistoryList = [...list, msg]
 			if msg.sendType is 2
 				# 己方消息，滚动到底部
-				setTimeout ( => @scrollToBottom 80), 0
+				setTimeout ( => @scrollToBottom 0), 0
 			else
 				if @isLocateBottom()
-					setTimeout ( => @scrollToBottom()), 0
+					setTimeout (=> @scrollToBottom 0), 0
 				else
 					# 对方消息，追加到 newUnreadElList
 					@data.newUnreadElList.push msg
@@ -671,5 +676,9 @@ define [
 				# 加载首屏历史消息数据
 				@fetchHistory 1
 
+		eventImgLoaded: (toBottom) ->
+			# 目前无效，因为 img 的 onload 不知为何加不上去
+			@scrollToBottom 0 if +toBottom
 
-	window.x = new View()
+
+	window.view = new View()
