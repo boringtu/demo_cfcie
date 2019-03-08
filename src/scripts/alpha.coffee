@@ -8,6 +8,11 @@ define [], ->
 
 	### ALPHA 命名空间 ###
 	window.ALPHA =
+		initAttrs:
+			name:
+				maxlength: 16
+			phone:
+				maxlength: 11
 		# 枚举: 接口地址
 		API_PATH:
 			## WebSocket ##

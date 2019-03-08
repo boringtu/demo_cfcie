@@ -96,9 +96,7 @@ define [
 			referTimeStamp: 0
 			chatHistoryList: []
 			newUnreadElList: []
-			form:
-				name: ''
-				phone: ''
+			form: {}	
 			conf:
 				# logo link
 				logo_href: ''
@@ -155,7 +153,6 @@ define [
 				origin = decodeURIComponent origin
 			else
 				origin = ''
-
 			Utils.ajax ALPHA.API_PATH.user.init,
 				method: 'POST'
 				data:
@@ -171,7 +168,7 @@ define [
 					# 加载首屏历史消息数据
 					@fetchHistory 1
 				else
-					@showInitBox()
+					@showInitBox msg: data.msg, list: data.info
 
 			Utils.ajax ALPHA.API_PATH.common.conf, params: type: 'pc_dialog'
 			.then (res) =>
@@ -196,9 +193,7 @@ define [
 			@els.body.on 'click', '.tab-box .close', @eventCloseTheChat
 			@els.body.on 'click', '.tab-box .closing-confirm-box button[data-type="cancel"]', => @els.closingConfirmBox.hide()
 			@els.body.on 'click', '.tab-box .closing-confirm-box button[data-type="okey"]', => @els.closingConfirmBox.hide(); window.close()
-			@els.body.on 'keyup', '.init-box input[name="name"]', @eventKeyupName
-			@els.body.on 'keyup', '.init-box input[name="phone"]', @eventKeyupPhone
-			@els.body.on 'keydown', '.init-box input[name="phone"]', @eventKeydownPhoneNum
+			@els.body.on 'keyup', '.init-box input', @eventKeyupInput
 			@els.body.on 'click', '.init-box button', @eventStartChatting
 			@els.body.on 'click', '.chat-history .unreadCount a', @eventShowLowerUnread
 			@els.body.on 'change', '.chat-toolbar input[type="file"]', @eventSendPic
@@ -211,8 +206,8 @@ define [
 			@els.body.on 'click', '.chat-sendbox button.send', @eventSend
 			@els.chatWindow.on 'scroll', @eventScrollHistory
 
-		showInitBox: ->
-			@els.initBox = content = $ @tpls.initBox()
+		showInitBox: (data) ->
+			@els.initBox = content = $ @tpls.initBox data
 			@els.app.append content
 
 		hideInitBox: ->
@@ -220,17 +215,10 @@ define [
 			@els.initBox.remove()
 			delete @els.initBox
 
-		eventKeyupName: (event) =>
-			@data.form.name = event.currentTarget.value
-
-		eventKeyupPhone: (event) =>
-			@data.form.phone = event.currentTarget.value
-
-		eventKeydownPhoneNum: (event) =>
-			keyCode = event.keyCode
-			return if keyCode is 8
-			event.preventDefault() unless keyCode in [48..57].concat [96..105]
-			event.preventDefault() if @data.form.phone.length > 10
+		eventKeyupInput: (event) =>
+			el = event.currentTarget
+			name = el.getAttribute 'name'
+			@data.form[name] = el.value
 
 		eventTextareaKeydown: (event) =>
 			if event.keyCode is 13 and not event.shiftKey
@@ -326,7 +314,7 @@ define [
 				params.size = @data.msgAppendCount
 			# 目前最前面的那条消息的 timestamp（非首屏）
 			params.timestamp = @data.referTimeStamp unless isReset
-			
+
 			# 发起请求
 			promise = Utils.ajax ALPHA.API_PATH.user.history,
 				params: params
@@ -583,7 +571,7 @@ define [
 		setNewUnread: ->
 			size = @data.newUnreadElList.length
 			@els.unreadCount.text(calcUnReadCount size).show()
-		
+
 		# 服务器推送来的消息（包括己方发送的消息）
 		addMessage: (msg) ->
 			list = @data.chatHistoryList
