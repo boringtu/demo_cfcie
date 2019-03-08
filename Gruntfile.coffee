@@ -145,6 +145,9 @@ module.exports = (grunt) ->
 					src: ['fonts/**']
 					dest: '<%= pkg.path.dist.tempCss %>'
 				]
+			forFavicon:
+				files:
+					'<%= pkg.path.dist.path %>favicon.ico': '<%= pkg.path.src.path %>favicon.ico'
 
 		cssmin:
 			forBower:
@@ -285,6 +288,7 @@ module.exports = (grunt) ->
 
 	grunt.registerTask 'default', [
 		'x-compile'
+		'copy:forFavicon'
 		'watch:test'
 	]
 
