@@ -121,6 +121,7 @@ module.exports = (grunt) ->
 					'<%= pkg.path.assets %>polyfill.min.js': '<%= pkg.path.node_modules %>@babel/polyfill/dist/polyfill.min.js'
 					'<%= pkg.path.assets %>velocity.min.js': '<%= pkg.path.node_modules %>velocity-animate/velocity.min.js'
 					'<%= pkg.path.assets %>jquery.form.min.js': '<%= pkg.path.node_modules %>jquery-form/dist/jquery.form.min.js'
+					'<%= pkg.path.assets %>twemoji.min.js': '<%= pkg.path.node_modules %>twemoji/2/twemoji.min.js'
 			forIE8L:
 				files:
 					'<%= pkg.path.dist.css %>ie-blocker.css': '<%= pkg.path.dist.tempCss %>ie-blocker.css'
@@ -148,6 +149,13 @@ module.exports = (grunt) ->
 			forFavicon:
 				files:
 					'<%= pkg.path.dist.path %>favicon.ico': '<%= pkg.path.src.path %>favicon.ico'
+			forTwemojiPics:
+				files: [
+					expand: true
+					cwd: '<%= pkg.path.src.images %>twemoji/'
+					src: ['**']
+					dest: '<%= pkg.path.dist.images %>twemoji/'
+				]
 
 		cssmin:
 			forBower:
@@ -289,6 +297,7 @@ module.exports = (grunt) ->
 	grunt.registerTask 'default', [
 		'x-compile'
 		'copy:forFavicon'
+		'copy:forTwemojiPics'
 		'watch:test'
 	]
 

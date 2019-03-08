@@ -6,6 +6,7 @@ define [
 	'text!../templates/historyItems.tpl'
 	'text!../templates/initBox.tpl'
 	'text!../templates/closedNotice.tpl'
+	'text!../templates/faceItems.tpl'
 ], (
 	$, doT
 	TplHeadbar
@@ -13,6 +14,7 @@ define [
 	TplHistoryItems
 	TplInitBox
 	TplClosedNotice
+	TplFaceItems
 ) ->
 	"use strict"
 
@@ -63,6 +65,10 @@ define [
 							'&nbsp;'
 						else
 							char
+				# processing emoji
+				text = text.replace /\[\/\w+\]/g, (face) ->
+					emoji = String.fromCodePoint "0x#{ face.match(/\[\/(\w+)\]/)[1] }"
+					twemoji.parse emoji
 				text.encodeHTML()
 			when 2
 				toBottom = msg.sendType is 1 or view.isLocateBottom()
@@ -88,6 +94,8 @@ define [
 
 	class View
 		data:
+			inputText: ''
+			isClosed: 0
 			reconnectCount: -1
 			isLoadingHistory: 0
 			noMoreHistory: 0
@@ -119,6 +127,7 @@ define [
 			loadingHistory = chatWindow.children '.loading-history'
 			chatWrapper = chatWindow.children '.chatWrapper'
 			chatToolbar = chatBox.children '.chat-toolbar'
+			faceWrapper = chatToolbar.find '.face-wrapper'
 			chatSendBox = chatBox.children '.chat-sendbox'
 
 			body: $ 'body'
@@ -135,6 +144,8 @@ define [
 			loadingHistory: loadingHistory
 			chatWrapper: chatWrapper
 			chatToolbar: chatToolbar
+			faceWrapper: faceWrapper
+			faceItems: faceWrapper.find '.faceItems'
 			chatSendImg: chatToolbar.find 'input[type="file"]'
 			chatSendBox: chatSendBox
 			chatTextarea: chatSendBox.find 'textarea'
@@ -145,6 +156,7 @@ define [
 			advertisingbar: doT.template TplAdvertisingbar
 			historyItems: doT.template TplHistoryItems
 			initBox: doT.template TplInitBox
+			faceItems: doT.template TplFaceItems
 
 		constructor: ->
 			# 来源地址
@@ -196,6 +208,8 @@ define [
 			@els.body.on 'keyup', '.init-box input', @eventKeyupInput
 			@els.body.on 'click', '.init-box button', @eventStartChatting
 			@els.body.on 'click', '.chat-history .unreadCount a', @eventShowLowerUnread
+			@els.body.on 'click', '.chat-toolbar .emoji-picker button', @eventToggleEmojiPicker
+			@els.body.on 'click', '.chat-toolbar .emoji-picker .face', @eventChooseFace
 			@els.body.on 'change', '.chat-toolbar input[type="file"]', @eventSendPic
 			@els.body.on 'submit', '.chat-toolbar form', @eventPicSubmit
 			@els.body.on 'focus', '.chat-sendbox textarea', => @els.contentBox.addClass 'active'
@@ -205,6 +219,14 @@ define [
 			@els.body.on 'paste', '.chat-sendbox textarea', @eventOnPaste
 			@els.body.on 'click', '.chat-sendbox button.send', @eventSend
 			@els.chatWindow.on 'scroll', @eventScrollHistory
+
+			# init emoji faces
+			@initEmoji()
+
+			@
+
+		initEmoji: ->
+			@els.faceItems.html @tpls.faceItems list: ALPHA.twemoji.list, createEmoji: @createEmoji
 
 		showInitBox: (data) ->
 			@els.initBox = content = $ @tpls.initBox data
@@ -290,7 +312,8 @@ define [
 			@els.closingConfirmBox.show()
 
 		# 结束当前对话
-		closingTheChat: ->
+		closingTheChat: =>
+			@data.isClosed = 1
 			window.close()
 
 		chattingClosed: ->
@@ -448,6 +471,23 @@ define [
 			@els.chatTextarea.val ''
 			@els.chatSendBtn.prop disabled: true
 
+		createEmoji: (emoji) ->
+			emoji = String.fromCodePoint "0x#{ emoji }"
+			twemoji.parse emoji, ALPHA.twemoji.params
+
+		# 向输入框插入表情，并关闭表情选择面板
+		insertEmoji: (emoji) ->
+			# 向输入框追加表情
+			unless @data.isClosed
+				@data.inputText += "[/#{ emoji }]"
+				@els.chatTextarea.val @data.inputText
+				@els.chatTextarea.trigger 'keyup'
+			# 关闭表情选择面板
+			@els.faceWrapper.hide()
+			# 使输入框获取焦点
+			setTimeout =>
+				@els.chatTextarea.focus()
+			, 20
 
 		# Event: 向输入框内黏贴
 		eventOnPaste:(event) =>
@@ -561,6 +601,14 @@ define [
 			@clearNewUnread()
 			# 滚动到底部
 			@scrollToBottom()
+
+		eventToggleEmojiPicker: =>
+			@els.faceWrapper.toggle()
+
+		eventChooseFace: (event) =>
+			el = $ event.currentTarget
+			emoji = el.attr 'data-val'
+			@insertEmoji emoji
 
 		# 清空 新推送的未读消息
 		clearNewUnread: ->

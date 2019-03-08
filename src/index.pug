@@ -50,6 +50,16 @@ html(lang="zh")
 							.chatWrapper
 
 					.chat-toolbar
+						.emoji-picker
+							button
+								i.icon.icon-face
+							div.face-wrapper
+								span.box-arrow
+									i
+								div.face-box
+									div
+										div.faceItems
+											//- span(class="face" v-for="item in twemoji.list" :key="item" @click="insertEmoji(item)" v-html="createEmoji(item)")
 						form(enctype="multipart/form-data")
 							input(type="file" accept="image/gif, image/jpeg, image/png" name="multipartFile")
 							i.icon.icon-picture
@@ -65,6 +75,7 @@ html(lang="zh")
 
 		script(src="assets/polyfill.min.js")
 		script(src="assets/velocity.min.js")
+		script(src="assets/twemoji.min.js")
 		script(src="assets/jquery.min.js")
 		script(src="assets/jquery.form.min.js")
 		script(src="assets/sockjs.min.js")
