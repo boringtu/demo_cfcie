@@ -477,17 +477,33 @@ define [
 
 		# 向输入框插入表情，并关闭表情选择面板
 		insertEmoji: (emoji) ->
-			# 向输入框追加表情
-			unless @data.isClosed
-				@data.inputText += "[/#{ emoji }]"
-				@els.chatTextarea.val @data.inputText
-				@els.chatTextarea.trigger 'keyup'
 			# 关闭表情选择面板
 			@els.faceWrapper.hide()
-			# 使输入框获取焦点
-			setTimeout =>
-				@els.chatTextarea.focus()
-			, 20
+			el = @els.chatTextarea[0]
+			# 向输入框追加表情
+			unless @data.isClosed
+				emoji = "[/#{ emoji }]"
+
+				if document.selection
+					el.focus()
+					selectRange = document.selection.createRange()
+					selectRange.text = emoji
+					el.focus()
+					@data.inputText = el.value
+				else
+					txt = @data.inputText
+					cursorPos = Utils.cursorPosition el
+					# 光标处插入表情
+					@data.inputText = "#{ txt.substr 0, cursorPos }#{ emoji }#{ txt.substr cursorPos }"
+					# 光标放到表情后
+					cursorPos += emoji.length
+					el.value = @data.inputText
+					# 使输入框获取焦点
+					setTimeout =>
+						Utils.cursorPosition el, cursorPos
+					, 20
+
+				@els.chatTextarea.trigger 'keyup'
 
 		# Event: 向输入框内黏贴
 		eventOnPaste:(event) =>
