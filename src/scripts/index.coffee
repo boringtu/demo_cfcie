@@ -7,6 +7,7 @@ define [
 	'text!../templates/initBox.tpl'
 	'text!../templates/closedNotice.tpl'
 	'text!../templates/faceItems.tpl'
+	'text!../templates/message.tpl'
 ], (
 	$, doT
 	TplHeadbar
@@ -15,6 +16,7 @@ define [
 	TplInitBox
 	TplClosedNotice
 	TplFaceItems
+	TplMessageBox
 ) ->
 	"use strict"
 
@@ -233,7 +235,9 @@ define [
 		showInitBox: (data) ->
 			@els.initBox = content = $ @tpls.initBox data
 			@els.app.append content
-
+		showMessage: ->
+			@els.msgBox = msgBox = $ TplMessageBox
+			@els.initBox.append msgBox
 		hideInitBox: ->
 			return unless @els.initBox
 			@els.initBox.remove()
@@ -720,10 +724,14 @@ define [
 
 		# Event: 立即咨询点击事件
 		eventStartChatting: =>
-			console.log @visitorInfo
 			for	item in @visitorInfo
 				continue if item.ban
 				if item.require and not @data.form[item.filed]
+					@showMessage()
+					setTimeout =>
+						@els.msgBox.remove()
+					,3000
+					# clearTimeout(timer)
 					return
 			Utils.ajax ALPHA.API_PATH.user.new,
 				method: 'POST'
