@@ -96,7 +96,7 @@ define [
 			referTimeStamp: 0
 			chatHistoryList: []
 			newUnreadElList: []
-			form: {}	
+			form: {}
 			conf:
 				# logo link
 				logo_href: ''
@@ -106,6 +106,7 @@ define [
 				right_ad_href: ''
 				# right ad img src
 				right_ad_media_id: ''
+			visitorInfo: []
 		els: do ->
 			app = $ '#app'
 			headbar = app.children '.tab-box'
@@ -160,6 +161,7 @@ define [
 					origin: origin
 			.then (res) =>
 				data = res.data
+				@visitorInfo = data.info
 				ALPHA.userId = @userId = data.userId
 				popup = +data.popup
 				unless popup
@@ -654,6 +656,11 @@ define [
 
 		# Event: 立即咨询点击事件
 		eventStartChatting: =>
+			console.log @visitorInfo
+			for	item in @visitorInfo
+				continue if item.ban
+				if item.require and not @data.form[item.filed]
+					return
 			Utils.ajax ALPHA.API_PATH.user.new,
 				method: 'POST'
 				data: @data.form
